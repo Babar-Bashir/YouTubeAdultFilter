@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">YouTubeFilter</string>
+    <string name="acc_service_desc">Protect your child from watching adult videos.</string>
+    <string name="enable_accessibility">ON</string>
+</resources>
