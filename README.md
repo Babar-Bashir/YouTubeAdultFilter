@@ -1,5 +1,5 @@
 # YouTubeAdultFilter
-Restrict your child to watching Adult Contents on YouTube using Android Accessibility.
+Restrict your child to watching/accessing Adult Contents on YouTube using Android Accessibility.
 
 Please check [wiki](https://github.com/Babar-Bashir/YouTubeAdultFilter/wiki) for adult keywords
 
