@@ -10,8 +10,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import custom.com.babar.youtubefilter.R;
@@ -26,6 +30,16 @@ public class Util {
     private static InputStream in;
     private static final String TAG = "YouTubeFilterService";
 
+    static final Map<String, Integer> ADULT_KEYWORD_FILE_BY_NAME;
+    static {
+        final Map<String, Integer> valuesByName = new HashMap<>();
+        valuesByName.put("PORN_0", R.raw.porn_0);
+        valuesByName.put("PORN_1", R.raw.porn_1);
+        valuesByName.put("PORN_2", R.raw.porn_2);
+        valuesByName.put("PORN_3", R.raw.porn_start_list);
+        ADULT_KEYWORD_FILE_BY_NAME = Collections.unmodifiableMap(valuesByName);
+    }
+
     private static String whiteSpaceRegex = "[\\s]+";
 
 
@@ -34,20 +48,29 @@ public class Util {
             if (ADULT_KEYWORDMAP.size() != 0) {
                 return;
             }
-            in = appContext.getResources().openRawResource(R.raw.badwords);
-            reader = new BufferedReader(new InputStreamReader(in));
-            String line = null;
+            for(int i =0;i<ADULT_KEYWORD_FILE_BY_NAME.size();i++) {
 
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.startsWith("#")) {
-                    continue;
-                }
+                in = appContext.getResources().openRawResource(ADULT_KEYWORD_FILE_BY_NAME.get("PORN_"+i));
+                reader = new BufferedReader(new InputStreamReader(in));
+                String line = null;
 
-                String[] parts = line.split(" ");
-                if (parts.length == 2
-                        && !"localhost".equalsIgnoreCase(parts[1])) {
-                    ADULT_KEYWORDMAP.put(parts[1], parts[0]);
+                while ((line = reader.readLine()) != null) {
+                    if(line.isEmpty()){
+                        continue;
+                    }
+                    line = line.trim();
+                    if (line.startsWith("#")) {
+                        continue;
+                    }
+                    //Using for redirect to specific video
+                   /* String[] parts = line.split(" ");
+                    if (parts.length == 2
+                            && !"localhost".equalsIgnoreCase(parts[1])) {
+                        ADULT_KEYWORDMAP.put(parts[1], parts[0]);
+                    }*/
+                   if(line.startsWith("@")){
+                       ADULT_KEYWORDMAP.put(line.substring(1),"https://www.youtube.com/watch?v=L3ePF8idgm4");
+                   }
                 }
             }
         } catch (Exception e) {
@@ -61,7 +84,61 @@ public class Util {
         }
     }
 
+    public static List<String> ngrams(String str,int n) {
+        List<String> ngrams = new ArrayList<String>();
+        String[] words = str.split(" ");
+        for (int i = 0; i < words.length - n + 1; i++)
+            ngrams.add(concat(words, i, i+n));
+        return ngrams;
+    }
 
+    private static String concat(String[] words, int start, int end) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i < end; i++)
+            sb.append((i > start ? " " : "") + words[i]);
+        return sb.toString();
+    }
+
+    /**
+     *
+     * @param str should has at least one string
+     * @param maxGramSize should be 1 at least
+     * @return set of continuous word n-grams up to maxGramSize from the sentence
+     */
+    public static List<String> generateNgramsUpto(String str, int maxGramSize) {
+
+        List<String> sentence = Arrays.asList(str.split("[\\s]+"));
+
+        List<String> ngrams = new ArrayList<String>();
+        int ngramSize = 0;
+        StringBuilder sb = null;
+
+        //sentence becomes ngrams
+        for (ListIterator<String> it = sentence.listIterator(); it.hasNext();) {
+            String word = (String) it.next();
+
+            //1- add the word itself
+            sb = new StringBuilder(word);
+            ngrams.add(word);
+            ngramSize=1;
+            it.previous();
+
+            //2- insert prevs of the word and add those too
+            while(it.hasPrevious() && ngramSize<maxGramSize){
+                sb.insert(0,' ');
+                sb.insert(0,it.previous());
+                ngrams.add(sb.toString());
+                ngramSize++;
+            }
+
+            //go back to initial position
+            while(ngramSize>0){
+                ngramSize--;
+                it.next();
+            }
+        }
+        return ngrams;
+    }
     public static String[] splitParts(String title){
         try {
             if(title == null || title.length()<1){

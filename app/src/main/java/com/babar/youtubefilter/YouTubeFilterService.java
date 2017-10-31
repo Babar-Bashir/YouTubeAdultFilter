@@ -33,11 +33,13 @@ public class YouTubeFilterService extends AccessibilityService {
                         && listOfResIDs.get(0).getText().length() > 0) {
                     listOfResIDs.get(0).getText().toString().split("\\[\\s]+");
                     String[] splittedTitle = Util.splitParts(listOfResIDs.get(0).getText().toString().toLowerCase());
-                    if (splittedTitle != null && splittedTitle.length > 0) {
-                        for (int i = 0; i < splittedTitle.length; i++) {
+                    List<String> ngramTitle = Util.generateNgramsUpto(listOfResIDs.get(0).getText().toString().toLowerCase(), splittedTitle.length);
+
+                    if (ngramTitle != null && ngramTitle.size() > 0) {
+                        for (int i = 0; i < ngramTitle.size(); i++) {
                             Util.prepareBadKeywords(this);
-                            if (Util.ADULT_KEYWORDMAP.containsKey(splittedTitle[i])) {
-                                String video_path = Util.ADULT_KEYWORDMAP.get(splittedTitle[i]);
+                            if (Util.ADULT_KEYWORDMAP.containsKey(ngramTitle.get(i))) {
+                                String video_path = Util.ADULT_KEYWORDMAP.get(ngramTitle.get(i));
                                 Uri uri = Uri.parse(video_path);
                                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                                 intent.addFlags(PendingIntent.FLAG_CANCEL_CURRENT);
