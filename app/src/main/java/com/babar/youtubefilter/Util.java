@@ -69,7 +69,7 @@ public class Util {
                         ADULT_KEYWORDMAP.put(parts[1], parts[0]);
                     }*/
                    if(line.startsWith("@")){
-                       ADULT_KEYWORDMAP.put(line.substring(1),"https://www.youtube.com/watch?v=L3ePF8idgm4");
+                       ADULT_KEYWORDMAP.put(line.substring(1),"https://www.youtube.com/watch?v=xERG4h3JWis");
                    }
                 }
             }
